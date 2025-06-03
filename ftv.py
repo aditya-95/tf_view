@@ -52,18 +52,26 @@ class Chain:
         self.name = name
         self.chain = []
     
-    def add_frame(self, frames:Optional[Union[Frame, List[Frame]]]):
-        if isinstance(frames, list):
-            self.chain.extend(frames)
-        else:
-            self.chain.append(frames)
+    def add_frame(self, frame:Frame):
+        self.chain.append(frame)
 
     def draw(self, ax:Axes3D, show_frames=True):
         x = []
         y = []
         z = []
 
-        for frame in self.chain:
+        temp_chain = self.chain
+        T = np.eye(4)
+
+        for frame in temp_chain:
+            T_current = np.eye(4)
+            T_current[0:3, 0:3] = frame.rotation_matrix
+            T_current[0:3, 3] = frame.position
+
+            T = T @ T_current
+            frame.position = T[0:3, 3]
+            frame.rotation_matrix = T[0:3, 0:3]
+
             frame.draw(ax, show_frames)
             x.append(frame.position[0])
             y.append(frame.position[1])
@@ -75,3 +83,13 @@ class Chain:
 
         lc = Line3DCollection(segments, colors=colors, linewidth=5)
         ax.add_collection3d(lc)
+    
+    def get_transform_wrt_base(self) -> np.ndarray:
+        T = np.eye(4)
+        for i in range(len(self.chain)):
+            T_next = np.eye(4)
+            T_next[0:3, 0:3] = self.chain[i].rotation_matrix
+            T_next[0:3, 3] = self.chain[i].position
+
+            T = T @ T_next
+        return T
