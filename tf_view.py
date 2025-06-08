@@ -117,4 +117,4 @@ class Chain:
             colors = ['#e8a730', '#008080', '#8B4513', '#BDB76B', '#708090']
 
             lc = Line3DCollection(segments, colors=colors, linewidth=7, alpha=0.8)
-            ax.add_collection4d(lc)
+            ax.add_collection3d(lc)
