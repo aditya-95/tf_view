@@ -1,6 +1,7 @@
 from __future__ import annotations
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from typing import Optional, List, Union
@@ -29,6 +30,10 @@ class Frame:
         print(self.name)
         for child in self.children:
             child.print_tree()
+    
+    def update(self):
+        self.rotation_matrix = self.calculate_rotation_mat()
+        self.tf[0:3, 0:3] = self.rotation_matrix
 
     def calculate_rotation_mat(self) -> np.ndarray:
         # euler angles for rotation
@@ -67,7 +72,6 @@ class Frame:
             ax.scatter(p[0], p[1], p[2], color='k', s=20)
         else:
             ax.scatter(p[0], p[1], p[2], color='k', s=20)
-
 
 
 class Chain:
@@ -118,3 +122,9 @@ class Chain:
 
             lc = Line3DCollection(segments, colors=colors, linewidth=7, alpha=0.8)
             ax.add_collection3d(lc)
+
+    def update(self):
+        self.transforms = self.get_paths()
+        for chain in self.transforms:
+            for frame in chain:
+                frame.update()
